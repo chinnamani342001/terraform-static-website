@@ -73,36 +73,63 @@ resource "aws_instance" "webserver" {
   vpc_security_group_ids = [
     aws_security_group.web_sg.id
   ]
-
-  user_data = <<-EOF
+user_data = <<-EOF
 #!/bin/bash
 
 apt update -y
 
-apt install apache2 unzip wget -y
+apt install apache2 unzip awscli -y
 
 systemctl enable apache2
-
 systemctl start apache2
 
-cd /var/www/html
+mkdir -p /var/www/html
 
-rm -rf *
+cat > /var/www/html/index.html <<'HTML'
+<!DOCTYPE html>
+<html>
+<head>
+<title>Terraform Website</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-wget https://github.com/startbootstrap/startbootstrap-freelancer/archive/refs/heads/master.zip
+<h1>AWS & DevOps Portfolio</h1>
 
-unzip master.zip
+<p>Website deployed using Terraform</p>
 
-cp -r startbootstrap-freelancer-master/* .
+<button onclick="showMessage()">
+Click Me
+</button>
 
-rm -rf master.zip startbootstrap-freelancer-master
+<script src="script.js"></script>
+
+</body>
+</html>
+HTML
+
+cat > /var/www/html/style.css <<'CSS'
+body{
+font-family:Arial;
+text-align:center;
+background:#f4f4f4;
+padding:50px;
+}
+
+h1{
+color:#0d6efd;
+}
+CSS
+
+cat > /var/www/html/script.js <<'JS'
+function showMessage(){
+alert("Website Successfully Deployed using Terraform!");
+}
+JS
 
 systemctl restart apache2
 
 EOF
-
-  tags = {
-    Name = "${var.project_name}-EC2"
-  }
+ 
 
 }
